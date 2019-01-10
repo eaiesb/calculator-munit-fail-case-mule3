@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <flow name="calculator-munit-mule3Flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/calculator" doc:name="HTTP"/>
+        <logger message="Operation: #[message.inboundProperties.'http.query.params'.['operator']]" level="INFO" doc:name="Logger"/>
+        <set-session-variable variableName="op" value="#[message.inboundProperties.'http.query.params'.['operator']]" doc:name="Session Variable"/>
+        <choice doc:name="Choice">
+            <when expression="#[sessionVars.op=='add']">
+                <set-payload value="#[Integer.parseInt(message.inboundProperties.'http.query.params'.['Number1'] )+Integer.parseInt(message.inboundProperties.'http.query.params'.['Number2'])]" doc:name="add"/>
+            </when>
+            <when expression="#[sessionVars.op=='sub']">
+                <set-payload value="#[message.inboundProperties.'http.query.params'.['Number1']-message.inboundProperties.'http.query.params'.['Number2']]" doc:name="sub"/>
+            </when>
+            <when expression="#[sessionVars.op=='mul']">
+                <set-payload value="#[message.inboundProperties.'http.query.params'.['Number1']*message.inboundProperties.'http.query.params'.['Number2']]" doc:name="mul"/>
+            </when>
+            <when expression="#[sessionVars.op=='div']">
+                <set-payload value="#[message.inboundProperties.'http.query.params'.['Number1']/message.inboundProperties.'http.query.params'.['Number2']]" doc:name="div"/>
+            </when>
+            <otherwise>
+                <set-payload value="Invalid Operation" doc:name="Defaultsum"/>
+            </otherwise>
+        </choice>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+    </flow>
+</mule>
